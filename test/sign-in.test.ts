@@ -4,7 +4,7 @@ import { signInWithMagicLink, AuthioError } from "../src";
 describe("signInWithMagicLink", () => {
   beforeEach(() => vi.restoreAllMocks());
 
-  it("POSTs to /v1/auth/magic-link/start with the right shape", async () => {
+  it("POSTs to /v1/auth/magic-link/send with the right shape", async () => {
     const fetchMock = vi.fn(
       async () =>
         new Response(JSON.stringify({ ok: true }), {
@@ -24,12 +24,12 @@ describe("signInWithMagicLink", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const args = (fetchMock as unknown as { mock: { calls: unknown[][] } }).mock.calls[0]!;
     const [url, init] = args as [string, RequestInit];
-    expect(url).toBe("https://auth.example.com/v1/auth/magic-link/start");
+    expect(url).toBe("https://auth.example.com/v1/auth/magic-link/send");
     expect(init.method).toBe("POST");
     const headers = init.headers as Record<string, string>;
     expect(headers["x-authio-project"]).toBe("proj_xyz");
     expect(JSON.parse(init.body as string)).toEqual({
-      email: "alice@example.com",
+      destination: "alice@example.com",
       redirect_uri: "https://app.example.com/callback",
     });
   });

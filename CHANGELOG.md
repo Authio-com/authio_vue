@@ -4,6 +4,20 @@ All notable changes to `@useauthio/vue` are documented here. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.2.2] — 2026-06-13
+
+### Fixed
+- **Magic-link sign-in now matches auth-core.** `signInWithMagicLink`
+  posted to `/v1/auth/magic-link/start` with body `{ email, redirect_uri }`;
+  auth-core's route is `/v1/auth/magic-link/send` and the recipient field
+  is `destination`. Real sends were rejected; they now succeed.
+- **Passkey login now completes.** `signInWithPasskey` called
+  `/v1/auth/passkey/login/start` and posted `{ email, assertion }`;
+  auth-core's route is `/v1/auth/passkey/login/options` and verify expects
+  the WebAuthn assertion (camelCase) wrapped under a top-level `credential`
+  key (unknown fields are rejected). The options response is also parsed as
+  camelCase (`rpId` / `userVerification` / `allowCredentials`).
+
 ## [0.2.0] — 2026-06-12
 
 ### Changed

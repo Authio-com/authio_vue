@@ -1,6 +1,6 @@
 {
   "name": "@useauthio/vue",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Vue 3 SDK for Authio: plugin, composable, gates, and router guard for pure SPAs.",
   "author": "Authio",
   "license": "MIT",
