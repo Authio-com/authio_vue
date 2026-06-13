@@ -12,8 +12,8 @@ importers:
   .:
     dependencies:
       '@useauthio/node':
-        specifier: file:./vendor/authio-node
-        version: file:vendor/authio-node
+        specifier: ^0.2.0
+        version: 0.2.0
     devDependencies:
       '@types/node':
         specifier: ^22.9.0
@@ -423,8 +423,8 @@ packages:
   '@types/node@22.19.19':
     resolution: {integrity: sha512-dyh/xO2Fh5bYrfWaaqGrRQQGkNdmYw6AmaAUvYeUMNTWQtvb796ikLdmTchRmOlOiIJ1TDXfWgVx1QkUlQ6Hew==}
 
-  '@useauthio/node@file:vendor/authio-node':
-    resolution: {directory: vendor/authio-node, type: directory}
+  '@useauthio/node@0.2.0':
+    resolution: {integrity: sha512-KBZwpdUfFob7IoVaWWEnNre1QEWNARQLq6I7kHxkKcYlOLjUg8T3uV0Oi/TPGZJuobjGmLlktOCjGvUtK8TFHw==}
     engines: {node: '>=20'}
 
   '@vitest/coverage-v8@4.1.8':
@@ -1533,7 +1533,7 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
-  '@useauthio/node@file:vendor/authio-node':
+  '@useauthio/node@0.2.0':
     dependencies:
       jose: 5.10.0
 

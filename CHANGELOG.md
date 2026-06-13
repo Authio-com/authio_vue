@@ -14,6 +14,15 @@ this project adheres to [Semantic Versioning](https://semver.org/).
   The old `@authio/vue` name is retired; releases below this entry were
   published (or prepared) under the old name and are kept for history.
 
+## [0.2.1] — 2026-06-13
+
+### Fixed
+- **Package is now installable from npm.** `0.2.0` declared its
+  `@useauthio/node` dependency as `file:./vendor/authio-node` (and did
+  not even ship the vendor directory in the tarball), so
+  `npm install @useauthio/vue` failed for every external user. The
+  dependency now points at the published `@useauthio/node` (`^0.2.0`).
+
 ## [Unreleased]
 
 ## [0.1.0] — 2026-05-22
