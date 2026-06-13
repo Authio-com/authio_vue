@@ -39,9 +39,12 @@ export async function signInWithMagicLink(
   await authioFetch<void>({
     apiUrl: input.apiUrl,
     projectId: input.projectId,
-    path: "/v1/auth/magic-link/start",
+    // auth-core's magic-link send route is `/v1/auth/magic-link/send` and
+    // the recipient field is `destination` (email or E.164), NOT `email`.
+    // See auth-core magiclink.go registerMagicLinkRoutes + magicLinkSendReq.
+    path: "/v1/auth/magic-link/send",
     method: "POST",
-    body: { email: input.email, redirect_uri: input.redirectUri },
+    body: { destination: input.email, redirect_uri: input.redirectUri },
     signal: input.signal,
     fetch: input.fetch,
   });
@@ -63,14 +66,17 @@ export interface SignInWithPasskeyResult {
 
 interface PasskeyChallenge {
   challenge: string;
-  rp_id?: string;
+  // auth-core unwraps go-webauthn's CredentialAssertion and emits the inner
+  // PublicKeyCredentialRequestOptions, which is standard WebAuthn camelCase
+  // (rpId / userVerification / allowCredentials), NOT snake_case.
+  rpId?: string;
   timeout?: number;
-  user_verification?: AuthenticatorAssertionResponseJSON["userVerification"];
-  allow_credentials?: Array<{ id: string; type?: "public-key" }>;
-}
-
-interface AuthenticatorAssertionResponseJSON {
   userVerification?: "required" | "preferred" | "discouraged";
+  allowCredentials?: Array<{
+    id: string;
+    type?: "public-key";
+    transports?: string[];
+  }>;
 }
 
 interface PasskeyVerifyResponse {
@@ -116,7 +122,8 @@ export async function signInWithPasskey(
   const challenge = await authioFetch<PasskeyChallenge>({
     apiUrl: input.apiUrl,
     projectId: input.projectId,
-    path: "/v1/auth/passkey/login/start",
+    // auth-core's passkey login route is `/options`, not `/start`.
+    path: "/v1/auth/passkey/login/options",
     method: "POST",
     body: { email: input.email },
     signal: input.signal,
@@ -128,12 +135,13 @@ export async function signInWithPasskey(
     assertion = (await navigator.credentials.get({
       publicKey: {
         challenge: base64UrlToBuf(challenge.challenge),
-        rpId: challenge.rp_id,
+        rpId: challenge.rpId,
         timeout: challenge.timeout ?? 60_000,
-        userVerification: challenge.user_verification ?? "preferred",
-        allowCredentials: (challenge.allow_credentials ?? []).map((c) => ({
+        userVerification: challenge.userVerification ?? "preferred",
+        allowCredentials: (challenge.allowCredentials ?? []).map((c) => ({
           id: base64UrlToBuf(c.id),
           type: "public-key",
+          transports: c.transports as AuthenticatorTransport[] | undefined,
         })),
       },
       signal: input.signal,
@@ -154,15 +162,19 @@ export async function signInWithPasskey(
   }
 
   const response = assertion.response as AuthenticatorAssertionResponse;
-  const payload = {
+  // auth-core's login/verify expects the standard WebAuthn JSON (camelCase)
+  // wrapped under a top-level `credential` key, and rejects unknown
+  // top-level fields (DisallowUnknownFields) — so no `email`/`assertion`
+  // wrapper. See auth-core passkey.go passkeyLoginVerify.
+  const credential = {
     id: assertion.id,
-    raw_id: bufToBase64Url(assertion.rawId),
+    rawId: bufToBase64Url(assertion.rawId),
     type: assertion.type,
     response: {
-      client_data_json: bufToBase64Url(response.clientDataJSON),
-      authenticator_data: bufToBase64Url(response.authenticatorData),
+      clientDataJSON: bufToBase64Url(response.clientDataJSON),
+      authenticatorData: bufToBase64Url(response.authenticatorData),
       signature: bufToBase64Url(response.signature),
-      user_handle: response.userHandle ? bufToBase64Url(response.userHandle) : null,
+      userHandle: response.userHandle ? bufToBase64Url(response.userHandle) : null,
     },
   };
 
@@ -171,7 +183,7 @@ export async function signInWithPasskey(
     projectId: input.projectId,
     path: "/v1/auth/passkey/login/verify",
     method: "POST",
-    body: { email: input.email, assertion: payload },
+    body: { credential },
     signal: input.signal,
     fetch: input.fetch,
   });
