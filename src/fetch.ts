@@ -1,5 +1,6 @@
 import { AuthioError } from "@useauthio/node";
 import { toAuthioError } from "./errors";
+import { SDK_USER_AGENT } from "./version";
 
 export const DEFAULT_FETCH_TIMEOUT_MS = 10_000;
 
@@ -50,7 +51,7 @@ export async function authioFetch<T>(opts: AuthioFetchOptions): Promise<T> {
   const headers: Record<string, string> = {
     accept: "application/json",
     "x-authio-project": opts.projectId,
-    "x-authio-sdk": "authio-vue/0.1.0",
+    "x-authio-sdk": SDK_USER_AGENT,
     ...(opts.headers ?? {}),
   };
   if (opts.body !== undefined) headers["content-type"] = "application/json";
