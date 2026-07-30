@@ -20,6 +20,7 @@
     "vue-tsc": "^2.1.0"
   },
   "overrides": {
+    "brace-expansion": ">=2.1.2 <3.0.0",
     "postcss": ">=8.5.18"
   }
 }
