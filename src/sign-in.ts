@@ -8,6 +8,8 @@ export interface SignInWithMagicLinkInput {
   projectId: string;
   email: string;
   redirectUri: string;
+  /** Opaque, consent-gated proof minted by @useauthio/xray. */
+  xrayVisitorProof?: string;
   signal?: AbortSignal;
   fetch?: typeof fetch;
 }
@@ -44,7 +46,13 @@ export async function signInWithMagicLink(
     // See auth-core magiclink.go registerMagicLinkRoutes + magicLinkSendReq.
     path: "/v1/auth/magic-link/send",
     method: "POST",
-    body: { destination: input.email, redirect_uri: input.redirectUri },
+    body: {
+      destination: input.email,
+      redirect_uri: input.redirectUri,
+      ...(input.xrayVisitorProof
+        ? { xray_visitor_proof: input.xrayVisitorProof }
+        : {}),
+    },
     signal: input.signal,
     fetch: input.fetch,
   });
@@ -54,6 +62,8 @@ export interface SignInWithPasskeyInput {
   apiUrl: string;
   projectId: string;
   email: string;
+  /** Opaque, consent-gated proof minted by @useauthio/xray. */
+  xrayVisitorProof?: string;
   signal?: AbortSignal;
   fetch?: typeof fetch;
 }
@@ -183,7 +193,12 @@ export async function signInWithPasskey(
     projectId: input.projectId,
     path: "/v1/auth/passkey/login/verify",
     method: "POST",
-    body: { credential },
+    body: {
+      credential,
+      ...(input.xrayVisitorProof
+        ? { xray_visitor_proof: input.xrayVisitorProof }
+        : {}),
+    },
     signal: input.signal,
     fetch: input.fetch,
   });
